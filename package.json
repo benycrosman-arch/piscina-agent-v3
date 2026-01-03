@@ -13,8 +13,7 @@
   },
   "engines": {
     "node": "24.x"
-  },
-  "keywords": ["vercel", "supabase", "api", "agendamento", "pool"],
-  "author": "Beny",
-  "license": "MIT"
+  }
+}
+
 }
