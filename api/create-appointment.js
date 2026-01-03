@@ -1,37 +1,34 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Coloque os dados do seu Supabase aqui
+// Substitua pelos dados do seu projeto Supabase
 const supabaseUrl = 'https://lgmgdsnawhbedsuhjaro.supabase.co'
-const supabaseKey = 'COLOQUE_AQUI_SUA_SERVICE_ROLE_KEY'
+const supabaseKey = 'COLOQUE_SUA_SERVICE_ROLE_KEY_AQUI' // service_role_key
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    try {
-      const { name, phone, address, date, time, transcript } = req.body
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Método não permitido' })
+  }
 
-      // Verifica se campos obrigatórios estão presentes
-      if (!name || !phone || !address || !date || !time) {
-        return res.status(400).json({ error: 'Faltando campos obrigatórios' })
-      }
+  const { name, phone, address, date, time, transcript } = req.body
 
-      // Insere no Supabase
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert([{ name, phone, address, date, time, transcript }])
+  if (!name || !phone || !address || !date || !time) {
+    return res.status(400).json({ error: 'Faltando campos obrigatórios' })
+  }
 
-      if (error) {
-        console.error(error)
-        return res.status(500).json({ error: 'Erro ao salvar no Supabase' })
-      }
+  try {
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert([{ name, phone, address, date, time, transcript }])
 
-      // Retorna sucesso
-      return res.status(200).json({ success: true, data })
-    } catch (err) {
-      console.error(err)
-      return res.status(500).json({ error: 'Erro no servidor' })
+    if (error) {
+      console.error('Erro Supabase:', error)
+      return res.status(500).json({ error: 'Erro ao salvar no Supabase' })
     }
-  } else {
-    res.status(405).json({ error: 'Método não permitido' })
+
+    return res.status(200).json({ success: true, data })
+  } catch (err) {
+    console.error('Erro Servidor:', err)
+    return res.status(500).json({ error: 'Erro no servidor' })
   }
 }
