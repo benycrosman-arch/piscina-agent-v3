@@ -17,9 +17,10 @@ export default async function handler(req, res) {
       }
 
       // Insert into Supabase
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert([
+     const { data, error } = await supabase
+  .from('apointments2')  // <- use your actual table name
+  .insert([{ name, phone, address, date, time, transcript }])
+
           { name, phone, address, date, time, transcript }
         ])
         .select() // get back the inserted row
