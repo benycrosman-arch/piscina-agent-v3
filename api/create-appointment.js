@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
-      const { name, phone, age, date for appointment, time for appointment, transcript } = req.body
+      const { name, phone, age, date_for_appointment, time_for_appointment, transcript } = req.body
 
       // Simple validation
       if (!name || !phone || !age || !date || !time) {
