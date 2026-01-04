@@ -2,7 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 
 // Supabase info
 const supabaseUrl = 'https://lgmgdsnawhbedsuhjaro.supabase.co'
-const supabaseKey = 'YOUR_SERVICE_ROLE_KEY'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnbWdkc25hd2hiZWRzdWhqYXJvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQ1Mzg1NSwiZXhwIjoyMDgzMDI5ODU1fQ.l1L3jpUVngINRIfBtGsJ-74wWdR75p_pyGMSE_f3KrA
+'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
