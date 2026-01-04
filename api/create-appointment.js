@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Replace with your Supabase project info
+// Supabase info
 const supabaseUrl = 'https://lgmgdsnawhbedsuhjaro.supabase.co'
-const supabaseKey = 'YOUR_SERVICE_ROLE_KEY' // Must be Service Role Key for full write access
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnbWdkc25hd2hiZWRzdWhqYXJvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQ1Mzg1NSwiZXhwIjoyMDgzMDI5ODU1fQ.l1L3jpUVngINRIfBtGsJ-74wWdR75p_pyGMSE_f3KrA' // must be Service Role Key
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
@@ -11,34 +11,31 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { name, phone, age, date_for_appointment, time_for_appointment, transcript } = req.body
+  let body
+  try {
+    // Parse JSON in case req.body is a string
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+  } catch {
+    return res.status(400).json({ error: 'Invalid JSON' })
+  }
+
+  // Destructure expected fields
+  const { name, phone, age, date_for_appointment, time_for_appointment, transcript } = body
 
   // Check all required fields
   if (!name || !phone || !age || !date_for_appointment || !time_for_appointment) {
-    return res.status(400).json({ error: 'Missing required fields' })
+    return res.status(400).json({ error: 'Missing required fields', received: body })
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('appointments') // make sure this matches your table name exactly
-      .insert([{
-        name,
-        phone,
-        age,
-        date_for_appointment,
-        time_for_appointment,
-        transcript
-      }])
-      .select() // get the inserted row back
+  // Insert into Supabase
+  const { data, error } = await supabase
+    .from('appointments') // make sure this table exists
+    .insert([{ name, phone, age, date_for_appointment, time_for_appointment, transcript }])
+    .select() // return inserted row
 
-    if (error) {
-      console.error('Supabase insert error:', error)
-      return res.status(500).json({ error: 'Failed to save appointment', details: error })
-    }
-
-    return res.status(200).json({ success: true, appointment: data[0] })
-  } catch (err) {
-    console.error('Server error:', err)
-    return res.status(500).json({ error: 'Server error' })
+  if (error) {
+    return res.status(500).json({ error: 'Supabase insert failed', details: error })
   }
+
+  return res.status(200).json({ success: true, appointment: data[0] })
 }
