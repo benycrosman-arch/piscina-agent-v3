@@ -1,13 +1,26 @@
 import fetch from "node-fetch";
+import dotenv from "dotenv";
 
-// CONFIG
-const ELEVEN_API_KEY = "sk_c26e99865f25929f342e764cfe586e14702f9ddb2713b4b5";
-const ELEVEN_VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
-const SUPABASE_URL = "https://lgmgdsnawhbedsuhjaro.supabase.co/functions/v1/smooth-function";
-const SUPABASE_KEY = "sb_secret_cv7SCjYZMFFbKlWdH4-1lw_c-65Vm2K";
+dotenv.config();
 
-// TESTE ELEVEN LABS
-async function gerarAudio(texto) {
+/*
+  🔐 Variáveis obrigatórias no .env:
+
+  SUPABASE_URL=https://SEU-PROJETO.supabase.co
+  SUPABASE_KEY=SBxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  ELEVEN_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  ELEVEN_VOICE_ID=xxxxxxxxxxxxxxxx
+*/
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const ELEVEN_API_KEY = process.env.ELEVEN_API_KEY;
+const ELEVEN_VOICE_ID = process.env.ELEVEN_VOICE_ID;
+
+// =====================
+// 1️⃣ Eleven Labs
+// =====================
+async function gerarAudio() {
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}`,
     {
@@ -16,44 +29,56 @@ async function gerarAudio(texto) {
         "xi-api-key": ELEVEN_API_KEY,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ text: texto })
+      body: JSON.stringify({
+        text: "Teste de áudio funcionando corretamente.",
+        model_id: "eleven_turbo_v2_5"
+      })
     }
   );
 
   if (!response.ok) {
-    throw new Error(await response.text());
+    const err = await response.text();
+    throw new Error("Erro Eleven Labs: " + err);
   }
 
-  console.log("Audio gerado com sucesso no Eleven Labs");
+  console.log("Áudio gerado com sucesso no Eleven Labs");
 }
 
-// TESTE SUPABASE
+// =====================
+// 2️⃣ Supabase
+// =====================
 async function salvarNoSupabase() {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/appointments`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      name: "Beny Crosman",
-      age: 12,
-      phone: "21999283123",
-      date: "2026-01-08",
-      time: "16:00"
-    })
-  });
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/appointments`,
+    {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: "Teste",
+        phone: "11999999999",
+      })
+    }
+  );
+
+  const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(await response.text());
+    throw new Error("Erro Supabase: " + text);
   }
 
   console.log("Dados salvos no Supabase");
 }
 
-// EXECUÇÃO
-(async () => {
-  await gerarAudio("Olá Beny, sua consulta foi registrada com sucesso.");
+// =====================
+// 3️⃣ Execução
+// =====================
+async function main() {
+  await gerarAudio();
   await salvarNoSupabase();
-})();
+}
+
+main().catch(console.error);
