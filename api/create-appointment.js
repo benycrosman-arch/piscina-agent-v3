@@ -1,22 +1,35 @@
 import fetch from "node-fetch";
 
+export const config = {
+  api: {
+    bodyParser: false
+  }
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    let body = req.body;
+    // 🔥 MANUAL RAW BODY READ (THIS IS THE KEY)
+    let rawBody = "";
 
-    // 🔴 CRITICAL FIX
-    if (typeof body === "string") {
-      body = JSON.parse(body);
-    }
+    await new Promise((resolve, reject) => {
+      req.on("data", chunk => {
+        rawBody += chunk;
+      });
+      req.on("end", resolve);
+      req.on("error", reject);
+    });
 
-    if (!body || typeof body !== "object") {
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
       return res.status(400).json({
-        error: "Invalid request body",
-        received: body
+        error: "Invalid JSON",
+        received: rawBody
       });
     }
 
