@@ -1,3 +1,7 @@
+export default function handler(req, res) {
+  console.log("FUNCTION HIT");
+  res.status(200).json({ ok: true });
+}
 import fetch from "node-fetch";
 
 export default async function handler(req, res) {
