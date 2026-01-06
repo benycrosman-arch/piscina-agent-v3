@@ -1,28 +1,20 @@
-export default function handler(req, res) {
-  console.log("FUNCTION HIT");
-  res.status(200).json({ ok: true });
-}
-import fetch from "node-fetch";
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
   try {
-    const { name, phone } = req.body;
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    const { name, phone } = req.body || {};
 
     if (!name || !phone) {
-      return res.status(400).json({
-        error: "Missing required fields: name, phone"
-      });
+      return res.status(400).json({ error: "Missing name or phone" });
     }
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
     if (!SUPABASE_URL || !SUPABASE_KEY) {
-      throw new Error("Supabase env vars not configured");
+      throw new Error("Missing Supabase env vars");
     }
 
     const response = await fetch(
@@ -33,33 +25,23 @@ export default async function handler(req, res) {
           apikey: SUPABASE_KEY,
           Authorization: `Bearer ${SUPABASE_KEY}`,
           "Content-Type": "application/json",
-          Prefer: "return=representation"
         },
-        body: JSON.stringify({
-          name,
-          phone
-        })
+        body: JSON.stringify({ name, phone }),
       }
     );
 
+    const text = await response.text();
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Supabase error: ${errorText}`);
+      throw new Error(text);
     }
 
-    const data = await response.json();
-
-    return res.status(200).json({
-      success: true,
-      appointment: data
-    });
-
-  } catch (error) {
-    console.error("create-appointment error:", error.message);
-
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("FUNCTION ERROR:", err);
     return res.status(500).json({
-      error: "Internal server error",
-      details: error.message
+      error: "Internal Server Error",
+      details: err.message,
     });
   }
 }
